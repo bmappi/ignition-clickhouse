@@ -1,0 +1,40 @@
+services:
+  gateway:
+    image: inductiveautomation/ignition:8.1.42
+    ports:
+      - 18088:8088
+      - 18000:8000
+    environment:
+      GATEWAY_ADMIN_PASSWORD: password
+      IGNITION_EDITION: standard
+      ACCEPT_IGNITION_EULA: "Y"
+    volumes:
+      - gateway-data:/usr/local/bin/ignition/data
+    command: >
+      -n Ignition-module-dev
+      -d
+      --
+      -Dignition.allowunsignedmodules=true
+      -Dia.developer.moduleupload=true
+      
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.6.2.17
+    hostname: clickhouse
+    container_name: clickhouse
+    cpus: 0.7
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    ports:
+      - "9000:9000"
+      - "8123:8123"
+    expose:
+      - 9181
+      - 9000
+    volumes:
+      # - ./tests/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - ./tests/clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  gateway-data:
